@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOCAL-HEALTH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom animation for soft entry */
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .fade-in-up-delay {
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { opacity: 0; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        
+        /* Pattern background */
+        .pattern-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* SVG Animation Classes */
+        .gauge-path {
+            transition: stroke-dasharray 1.5s ease-out, stroke 0.5s ease;
+        }
+        
+        /* Noise visualizer bars */
+        .bar {
+            transition: height 0.1s ease;
+        }
+    </style>
+</head>
+<body class="h-screen w-full bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-500 overflow-hidden relative">
+    <!-- Overlay gradient -->
+    <div class="absolute inset-0 bg-gradient-to-t from-blue-600/40 to-transparent"></div>
+    <!-- Pattern overlay -->
+    <div class="absolute inset-0 pattern-overlay pointer-events-none"></div>
+
+    <div class="relative z-10 flex flex-col items-center justify-center h-full w-full px-4">
+        
+        <!-- HOME VIEW -->
+        <div id="home-view" class="flex flex-col items-center w-full transition-all duration-500">
+            
+            <!-- Unified Main Card -->
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 w-full max-w-md flex flex-col items-center text-center border border-white/50 fade-in-up transform transition-transform duration-300">
+                
+                <!-- Brand Name -->
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-blue-900 tracking-tight mb-4">VOCAL-HEALTH</h1>
+                
+                <!-- Separator -->
+                <div class="w-full h-px bg-blue-100 mb-6"></div>
+                
+                <!-- Value Proposition -->
+                <p class="text-lg text-blue-900/80 font-medium leading-relaxed mb-8 px-2">
+                    Get an early lung and heart risk assessment from your voice in under 60 seconds.
+                </p>
+
+                <!-- Trust Indicators Box -->
+                <div class="w-full bg-blue-50/50 rounded-2xl p-5 mb-8 text-left space-y-4 border border-blue-100">
+                    <div class="flex items-start gap-3">
+                        <!-- Custom Bullet Point -->
+                        <div class="mt-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] ring-2 ring-blue-200 flex-shrink-0"></div>
+                        <p class="text-sm text-blue-800 font-medium leading-tight">Based on validated respiratory sound datasets</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] ring-2 ring-blue-200 flex-shrink-0"></div>
+                        <p class="text-sm text-blue-800 font-medium leading-tight">Non-invasive - No data stored without consent</p>
+                    </div>
+                </div>
+                
+                <!-- Start Button -->
+                <button onclick="showRecordingInterface()" class="w-full bg-amber-500 hover:bg-amber-600 text-blue-900 font-bold text-lg py-4 rounded-xl shadow-lg transition-all hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 group">
+                    <span>Start Assessment</span>
+                    <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- INSTRUCTION MODAL -->
+        <div id="instruction-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-blue-900/80 backdrop-blur-sm p-4 fade-in-up">
+            <div class="bg-white rounded-[2rem] p-6 w-full max-w-sm shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-amber-500"></div>
+                
+                <h3 class="text-xl font-bold text-blue-900 mb-1 text-center mt-2">Breathing Analysis</h3>
+                <p class="text-xs text-gray-500 text-center mb-6">Please follow this pattern during recording</p>
+
+                <!-- Animation Container -->
+                <div class="relative w-full h-48 bg-blue-50 rounded-2xl mb-6 overflow-hidden border border-blue-100 flex items-center justify-center">
+                    <!-- Text Labels -->
+                    <div class="absolute top-20 left-4 text-[10px] font-bold text-emerald-600">IN (2s)</div>
+                    <div class="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-blue-600">HOLD (2s)</div>
+                    <div class="absolute top-20 right-4 text-[10px] font-bold text-amber-600">OUT (4s)</div>
+
+                    <!-- SVG Graph -->
+                    <svg class="w-full h-full" viewBox="0 0 300 150">
+                        <path d="M 20,130 L 85,40 L 160,40 L 280,130" fill="none" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M 20,130 L 85,40 L 160,40 L 280,130" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 8"/>
+                        
+                        <!-- Animated Dot -->
+                        <circle r="8" fill="#f59e0b" stroke="white" stroke-width="3" class="shadow-lg">
+                            <animateMotion 
+                                dur="8s" 
+                                repeatCount="indefinite" 
+                                path="M 20,130 L 85,40 L 160,40 L 280,130"
+                                calcMode="linear"
+                                keyPoints="0;0.25;0.5;1"
+                                keyTimes="0;0.25;0.5;1"
+                            />
+                        </circle>
+                    </svg>
+                </div>
+
+                <div class="space-y-3 mb-8 px-2">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                        <p class="text-xs text-gray-600 leading-tight pt-1"><strong>Inhale</strong> deeply through your nose.</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                        <p class="text-xs text-gray-600 leading-tight pt-1"><strong>Hold</strong> your breath briefly.</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                        <p class="text-xs text-gray-600 leading-tight pt-1"><strong>Exhale</strong> steadily making an "Ahhh" sound.</p>
+                    </div>
+                </div>
+
+                <button onclick="startActualRecording()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold text-sm py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>I Understand</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- RECORDING VIEW (Initially Hidden) -->
+        <div id="recording-view" class="hidden w-full max-w-md fade-in-up">
+            <div class="bg-white/90 backdrop-blur-md rounded-[2rem] shadow-2xl p-8 w-full flex flex-col items-center border border-white/50 relative overflow-hidden">
+                
+                <!-- NEW: Environment Check UI -->
+                <div id="environment-check-ui" class="w-full flex flex-col items-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-blue-900 mb-2">Environment Check</h2>
+                    <p class="text-xs text-gray-600 mb-6 text-center px-4">We need to ensure your surroundings are quiet enough for accurate analysis.</p>
+                    
+                    <!-- Visualizer Simulation -->
+                    <div id="noiseVisualizer" class="h-16 flex items-center justify-center gap-1 mb-6 opacity-50">
+                        <div class="bar w-1.5 bg-blue-400 rounded-full h-3"></div>
+                        <div class="bar w-1.5 bg-blue-400 rounded-full h-5"></div>
+                        <div class="bar w-1.5 bg-blue-400 rounded-full h-8"></div>
+                        <div class="bar w-1.5 bg-blue-400 rounded-full h-4"></div>
+                        <div class="bar w-1.5 bg-blue-400 rounded-full h-6"></div>
+                    </div>
+
+                    <div id="checkResult" class="hidden mb-6 w-full">
+                        <!-- Result gets injected here -->
+                    </div>
+
+                    <button id="startCheckBtn" onclick="startEnvironmentCheck()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 rounded-xl shadow-md transition-all active:scale-95">
+                        Check Noise Level
+                    </button>
+
+                    <button id="proceedBtn" onclick="proceedToRecording()" class="hidden w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 rounded-xl shadow-md transition-all active:scale-95 mb-3">
+                        Proceed to Recording
+                    </button>
+                    
+                    <button id="retryCheckBtn" onclick="resetCheck()" class="hidden w-full bg-white border border-gray-200 text-gray-600 font-bold text-sm py-3 rounded-xl hover:bg-gray-50 transition-all">
+                        Try Again
+                    </button>
+                    
+                    <button onclick="location.reload()" class="mt-4 text-xs text-gray-400 hover:text-blue-600">Cancel</button>
+                </div>
+
+                <!-- Normal Recording UI (Initially Hidden) -->
+                <div id="recording-ui" class="hidden w-full flex flex-col items-center">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-2">Voice Input</h2>
+                    <p class="text-xs text-gray-600 mb-8 text-center">Please record your voice or upload an audio file.</p>
+
+                    <!-- Record Button -->
+                    <button id="recordBtn" onclick="handleRecordPress()" class="group relative flex items-center justify-center w-24 h-24 rounded-full bg-amber-500 shadow-lg hover:bg-amber-600 transition-all duration-300 mb-6 active:scale-95 z-10">
+                        <svg id="micIcon" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-900 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        <svg id="stopIcon" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-900 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                        </svg>
+                        <span id="pulseRing" class="absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-0"></span>
+                    </button>
+                    <span id="recordText" class="text-sm font-semibold text-blue-700 mb-6">Tap to Record</span>
+
+                    <div class="flex items-center w-full mb-6">
+                        <div class="h-px bg-gray-300 flex-1"></div>
+                        <span class="px-3 text-xs text-gray-400 font-bold">OR</span>
+                        <div class="h-px bg-gray-300 flex-1"></div>
+                    </div>
+
+                    <div class="w-full">
+                        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-400/50 rounded-xl cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors group">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-2 text-amber-500 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                <p class="mb-1 text-xs text-gray-500"><span class="font-bold text-amber-600">Click to upload</span> audio file</p>
+                                <p class="text-[10px] text-gray-400">MP3, WAV, M4A</p>
+                            </div>
+                            <input type="file" class="hidden" accept="audio/*" onchange="handleFileUpload(this)" />
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Analyzing UI -->
+                <div id="analyzing-ui" class="hidden w-full flex-col items-center justify-center py-10">
+                    <div class="relative w-32 h-32 flex items-center justify-center mb-6">
+                        <div class="absolute inset-0 bg-amber-500 rounded-full opacity-20 pulse-ring"></div>
+                        <div class="absolute inset-0 bg-amber-500 rounded-full opacity-20 pulse-ring" style="animation-delay: 1s;"></div>
+                        <div class="relative z-10 bg-white p-4 rounded-full shadow-lg">
+                            <svg class="w-12 h-12 text-amber-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-blue-900 mb-2">Analyzing Voice Patterns...</h3>
+                    <p class="text-xs text-gray-500">Comparing with vocal biomarkers</p>
+                </div>
+
+                <button onclick="location.reload()" class="mt-6 text-xs text-gray-500 underline hover:text-amber-600">Cancel</button>
+            </div>
+        </div>
+
+        <!-- RESULTS VIEW (New Design) -->
+        <div id="results-view" class="hidden w-full max-w-md fade-in-up pb-10">
+            <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center shadow-sm">Your Screening Result</h2>
+            
+            <div class="bg-white rounded-[2rem] shadow-2xl p-6 w-full flex flex-col items-center border border-white/50 overflow-hidden">
+                
+                <!-- Dynamic Header -->
+                <h3 id="resultTitle" class="text-xl font-extrabold text-amber-500 mb-6">Moderate Risk</h3>
+
+                <!-- SVG Gauge -->
+                <div class="relative w-48 h-24 mb-6">
+                    <svg viewBox="0 0 100 50" class="w-full h-full overflow-visible">
+                        <!-- Background Arc -->
+                        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#f3f4f6" stroke-width="8" stroke-linecap="round"/>
+                        <!-- Foreground Arc (Dynamic) -->
+                        <path id="gaugePath" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" stroke-dasharray="0 126" class="gauge-path"/>
+                        
+                        <!-- Center Text -->
+                        <text id="scoreText" x="50" y="45" text-anchor="middle" class="font-bold fill-gray-800 transition-colors duration-500" style="font-size: 22px;">
+                            <tspan id="scoreNumber">6</tspan><tspan style="font-size: 10px; fill: #9ca3af;">/10</tspan>
+                        </text>
+                    </svg>
+                </div>
+
+                <!-- Short Description -->
+                <p id="resultDescription" class="text-center text-sm font-medium text-gray-700 mb-6 leading-tight px-4">
+                    Early airflow or voice stability anomalies detected
+                </p>
+
+                <!-- NEW: Risk Assessment Grid -->
+                <div class="w-full grid grid-cols-2 gap-4 mb-6">
+                    <!-- Cardiac Box -->
+                    <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100 flex flex-col items-center text-center shadow-sm">
+                        <!-- Heart Icon -->
+                        <svg class="w-6 h-6 text-rose-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        <h4 class="font-bold text-rose-900 text-xs mb-1 uppercase tracking-wider">Cardiac</h4>
+                        <p id="cardiacRiskText" class="text-[10px] text-gray-600 font-medium leading-snug">
+                            Analyzing...
+                        </p>
+                    </div>
+
+                    <!-- Pulmonary Box -->
+                    <div class="bg-cyan-50 p-4 rounded-2xl border border-cyan-100 flex flex-col items-center text-center shadow-sm">
+                        <!-- Lung Icon -->
+                        <svg class="w-6 h-6 text-cyan-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /> <!-- Abstract lung shape placeholder -->
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /> <!-- Using upload cloud icon as stylized lung/air icon for now -->
+                        </svg>
+                        <h4 class="font-bold text-cyan-900 text-xs mb-1 uppercase tracking-wider">Pulmonary</h4>
+                        <p id="pulmonaryRiskText" class="text-[10px] text-gray-600 font-medium leading-snug">
+                            Analyzing...
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-100 mb-6"></div>
+
+                <!-- Why This Result -->
+                <div class="w-full text-left mb-6">
+                    <h4 class="flex items-center gap-2 font-bold text-blue-900 text-sm mb-3">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Why This Result?
+                    </h4>
+                    <ul id="reasonsList" class="space-y-2 pl-1">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+                <!-- What Should I Do -->
+                <div class="w-full text-left bg-blue-50/50 p-4 rounded-xl mb-4 border border-blue-100">
+                    <h4 class="font-bold text-blue-900 text-sm mb-3">What Should I Do Next?</h4>
+                    <ul id="adviceList" class="space-y-2">
+                         <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+                <!-- Disclaimer -->
+                <p class="text-[10px] text-gray-400 text-center leading-tight mb-6 px-2">
+                    Note: This risk estimate is not a medical diagnosis. Consult a healthcare professional for further evaluation.
+                </p>
+
+                <!-- Buttons -->
+                <div class="w-full flex gap-3">
+                    <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl shadow transition-colors text-center flex items-center justify-center">
+                        View Detailed Report
+                    </button>
+                    <button onclick="location.reload()" class="flex-1 bg-white hover:bg-gray-50 text-blue-600 border border-blue-200 font-bold text-xs py-3 rounded-xl shadow-sm transition-colors text-center flex items-center justify-center gap-1">
+                        Restart 
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="absolute bottom-2 text-[10px] text-white/60 font-medium">
+            Made by the VOCAL-HEALTH Team for Indonesia
+        </footer>
+    </div>
+
+    <script>
+        // --- UPDATED DATA SCENARIOS (1-10 Scale with Cardiac/Pulmonary) ---
+        const diagnosisScenarios = [
+            {
+                label: "Low Risk",
+                color: "#10b981", // Green
+                range: [1, 3],
+                description: "Voice patterns align with healthy respiratory function.",
+                // Explicit "no risk" statements
+                cardiac: "No cardiac risks detected. Heart rhythm indicators are stable.",
+                pulmonary: "No pulmonary risks detected. Airflow duration is healthy.",
+                reasons: [
+                    "Stable breath sustain detected",
+                    "Clear resonance and pitch stability",
+                    "No obstructive patterns identified"
+                ],
+                advice: [
+                    "Maintain vocal hygiene and hydration",
+                    "No immediate medical action required based on this screening"
+                ]
+            },
+            {
+                label: "Moderate Risk", // Scenario A: Lung Issue, Heart Fine
+                color: "#f59e0b", // Orange
+                range: [4, 7],
+                description: "Early airflow anomalies detected suggesting mild restriction.",
+                cardiac: "No cardiac risks detected. Vocal micro-tremors are within normal range.",
+                pulmonary: "Mild airflow turbulence detected suggesting early restriction.",
+                reasons: [
+                    "Irregular breath timing detected",
+                    "Slight wheezing frequencies noted",
+                    "Reduced maximum phonation time"
+                ],
+                advice: [
+                    "If you experience persistent cough, visit a local clinic",
+                    "Avoid smoke and respiratory irritants",
+                    "Consider repeating screening in 7 days"
+                ]
+            },
+            {
+                label: "Moderate Risk", // Scenario B: Heart Issue, Lung Fine
+                color: "#f59e0b", // Orange
+                range: [4, 7],
+                description: "Vocal stability metrics suggest potential cardiac stress.",
+                cardiac: "Micro-tremors detected indicating potential cardiac stress or fatigue.",
+                pulmonary: "No pulmonary risks detected. Airflow patterns appear clear.",
+                reasons: [
+                    "Frequency jitter detected in vocal sustain",
+                    "Pitch instability not linked to airflow obstruction",
+                    "Signs of systemic fatigue identified"
+                ],
+                advice: [
+                    "Monitor your resting heart rate",
+                    "Ensure adequate rest and hydration",
+                    "Consult a physician if you feel palpitations"
+                ]
+            },
+            {
+                label: "High Risk",
+                color: "#ef4444", // Red
+                range: [8, 10],
+                description: "Significant vocal biomarkers indicate potential obstruction.",
+                cardiac: "Secondary signs of cardiac strain detected due to respiratory effort.",
+                pulmonary: "Distinct wheezing signatures found indicating obstruction (Asthma/COPD).",
+                reasons: [
+                    "High-frequency wheezing patterns detected",
+                    "Shortened phonation time observed",
+                    "Strong correlation with respiratory distress markers"
+                ],
+                advice: [
+                    "Consult a healthcare provider immediately",
+                    "Avoid vocal strain and irritants",
+                    "Monitor for shortness of breath"
+                ]
+            }
+        ];
+
+        function showRecordingInterface() {
+            const homeView = document.getElementById('home-view');
+            const recView = document.getElementById('recording-view');
+            
+            homeView.style.opacity = '0';
+            homeView.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                homeView.classList.add('hidden');
+                recView.classList.remove('hidden');
+                void recView.offsetWidth; 
+                recView.classList.remove('opacity-0');
+            }, 300);
+        }
+
+        // --- NEW ENVIRONMENT CHECK LOGIC ---
+        let checkInterval;
+
+        function startEnvironmentCheck() {
+            const visualizer = document.getElementById('noiseVisualizer');
+            const checkBtn = document.getElementById('startCheckBtn');
+            const bars = document.querySelectorAll('.bar');
+            
+            visualizer.classList.remove('opacity-50');
+            checkBtn.innerText = "Listening...";
+            checkBtn.disabled = true;
+            checkBtn.classList.add('opacity-75');
+
+            // Simulate Audio Visualizer
+            checkInterval = setInterval(() => {
+                bars.forEach(bar => {
+                    const h = Math.floor(Math.random() * 25) + 5; // 5 to 30px
+                    bar.style.height = `${h}px`;
+                });
+            }, 100);
+
+            // Finish check after 3 seconds
+            setTimeout(() => {
+                finishEnvironmentCheck();
+            }, 3000);
+        }
+
+        function finishEnvironmentCheck() {
+            clearInterval(checkInterval);
+            const visualizer = document.getElementById('noiseVisualizer');
+            const resultDiv = document.getElementById('checkResult');
+            const checkBtn = document.getElementById('startCheckBtn');
+            const proceedBtn = document.getElementById('proceedBtn');
+            const retryBtn = document.getElementById('retryCheckBtn');
+
+            visualizer.classList.add('opacity-50');
+            checkBtn.classList.add('hidden');
+
+            // Random Result
+            const isOptimal = Math.random() > 0.4; // 60% chance optimal
+            
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = isOptimal 
+                ? `<div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center gap-3">
+                     <div class="bg-emerald-100 p-2 rounded-full"><svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+                     <div class="text-left"><p class="font-bold text-emerald-900 text-sm">Optimal Environment</p><p class="text-[10px] text-emerald-700">Background noise is low (32dB).</p></div>
+                   </div>`
+                : `<div class="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center gap-3">
+                     <div class="bg-amber-100 p-2 rounded-full"><svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>
+                     <div class="text-left"><p class="font-bold text-amber-900 text-sm">Noise Detected</p><p class="text-[10px] text-amber-700">Background noise is high (65dB).</p></div>
+                   </div>`;
+
+            if (isOptimal) {
+                proceedBtn.classList.remove('hidden');
+            } else {
+                proceedBtn.classList.remove('hidden'); // Allow proceed anyway
+                proceedBtn.innerText = "Proceed Anyway";
+                proceedBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm py-3 rounded-xl shadow-md transition-all active:scale-95 mb-3";
+                retryBtn.classList.remove('hidden');
+            }
+        }
+
+        function resetCheck() {
+            const resultDiv = document.getElementById('checkResult');
+            const checkBtn = document.getElementById('startCheckBtn');
+            const proceedBtn = document.getElementById('proceedBtn');
+            const retryBtn = document.getElementById('retryCheckBtn');
+
+            resultDiv.classList.add('hidden');
+            proceedBtn.classList.add('hidden');
+            retryBtn.classList.add('hidden');
+            checkBtn.classList.remove('hidden');
+            checkBtn.innerText = "Check Noise Level";
+            checkBtn.disabled = false;
+            checkBtn.classList.remove('opacity-75');
+            
+            // Reset proceed button style in case it was changed
+            proceedBtn.innerText = "Proceed to Recording";
+            proceedBtn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 rounded-xl shadow-md transition-all active:scale-95 mb-3";
+        }
+
+        function proceedToRecording() {
+            const envUI = document.getElementById('environment-check-ui');
+            const recUI = document.getElementById('recording-ui');
+            
+            envUI.classList.add('hidden');
+            recUI.classList.remove('hidden');
+        }
+
+
+        let isRecording = false;
+
+        function handleRecordPress() {
+            if (!isRecording) {
+                document.getElementById('instruction-modal').classList.remove('hidden');
+            } else {
+                stopRecording();
+            }
+        }
+
+        function startActualRecording() {
+            document.getElementById('instruction-modal').classList.add('hidden');
+            
+            const btn = document.getElementById('recordBtn');
+            const micIcon = document.getElementById('micIcon');
+            const stopIcon = document.getElementById('stopIcon');
+            const text = document.getElementById('recordText');
+            const pulse = document.getElementById('pulseRing');
+
+            text.innerText = "Recording... (Tap to Stop)";
+            micIcon.classList.add('hidden');
+            stopIcon.classList.remove('hidden');
+            pulse.classList.add('animate-ping', 'opacity-75');
+            isRecording = true;
+        }
+
+        function stopRecording() {
+            const btn = document.getElementById('recordBtn');
+            const pulse = document.getElementById('pulseRing');
+            const text = document.getElementById('recordText');
+            
+            text.innerText = "Processing...";
+            pulse.classList.remove('animate-ping', 'opacity-75');
+            isRecording = false;
+            
+            startAnalysis();
+        }
+
+        function startAnalysis() {
+            const recUI = document.getElementById('recording-ui');
+            const analyzeUI = document.getElementById('analyzing-ui');
+            const recView = document.getElementById('recording-view');
+            const resultsView = document.getElementById('results-view');
+
+            recUI.classList.add('hidden');
+            analyzeUI.classList.remove('hidden');
+            analyzeUI.classList.add('flex');
+
+            // --- SELECTION LOGIC ---
+            // 1. Pick a scenario
+            const scenario = diagnosisScenarios[Math.floor(Math.random() * diagnosisScenarios.length)];
+            
+            // 2. Generate specific score within range
+            const min = scenario.range[0];
+            const max = scenario.range[1];
+            const finalScore = Math.floor(Math.random() * (max - min + 1)) + min;
+
+            // 3. Wait and Show
+            setTimeout(() => {
+                recView.style.opacity = '0';
+                recView.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    recView.classList.add('hidden');
+                    
+                    // --- POPULATE UI ---
+                    document.getElementById('resultTitle').innerText = scenario.label;
+                    document.getElementById('resultTitle').style.color = scenario.color;
+                    document.getElementById('resultDescription').innerText = scenario.description;
+                    
+                    // Update New Risk Boxes
+                    document.getElementById('cardiacRiskText').innerText = scenario.cardiac;
+                    document.getElementById('pulmonaryRiskText').innerText = scenario.pulmonary;
+                    
+                    // FIXED: Use textContent for SVG elements to ensure number updates reliably
+                    document.getElementById('scoreNumber').textContent = finalScore;
+                    
+                    // Update text color to match risk
+                    document.getElementById('scoreText').style.fill = scenario.color;
+
+                    // Update Gauge Arc
+                    // Arc length approx 126 for semi-circle (pi * r approx 3.14 * 40 = 125.6)
+                    const totalLength = 126;
+                    const filledLength = (finalScore / 10) * totalLength;
+                    const gaugePath = document.getElementById('gaugePath');
+                    
+                    gaugePath.style.stroke = scenario.color;
+                    // Reset first to animate
+                    gaugePath.style.strokeDasharray = `0 ${totalLength}`;
+                    
+                    // Lists
+                    const reasonsList = document.getElementById('reasonsList');
+                    reasonsList.innerHTML = scenario.reasons.map(r => 
+                        `<li class="flex items-start gap-2 text-xs text-gray-600">
+                            <span class="mt-1 w-1.5 h-1.5 rounded-full bg-blue-300 flex-shrink-0"></span>${r}
+                        </li>`
+                    ).join('');
+
+                    const adviceList = document.getElementById('adviceList');
+                    adviceList.innerHTML = scenario.advice.map(a => 
+                        `<li class="flex items-start gap-2 text-xs text-gray-700">
+                            <span class="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>${a}
+                        </li>`
+                    ).join('');
+
+                    // Show View
+                    resultsView.classList.remove('hidden');
+                    void resultsView.offsetWidth;
+                    resultsView.classList.remove('opacity-0');
+
+                    // Trigger Gauge Animation after view is visible
+                    setTimeout(() => {
+                        gaugePath.style.strokeDasharray = `${filledLength} ${totalLength}`;
+                    }, 100);
+
+                }, 300);
+
+            }, 2500);
+        }
+
+        function handleFileUpload(input) {
+            if (input.files && input.files[0]) {
+                const fileName = input.files[0].name;
+                startAnalysis();
+            }
+        }
+    </script>
+</body>
+</html>
